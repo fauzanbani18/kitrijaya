@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const dbConfig = {
@@ -9,6 +10,16 @@ const dbConfig = {
   password: process.env.DB_PASS || '',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
   ...(process.env.DB_SOCKET_PATH ? { socketPath: process.env.DB_SOCKET_PATH } : {}),
+  // TiDB SSL configuration
+  ...(process.env.DB_SSL === 'true' ? {
+    ssl: {
+      rejectUnauthorized: true,
+      // Jika menggunakan TiDB Cloud, uncomment baris berikut:
+      // ca: fs.readFileSync(path.join(__dirname, '../certs/ca.pem')),
+      // cert: fs.readFileSync(path.join(__dirname, '../certs/client-cert.pem')),
+      // key: fs.readFileSync(path.join(__dirname, '../certs/client-key.pem')),
+    }
+  } : {}),
 };
 
 let pool;

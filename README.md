@@ -54,30 +54,46 @@ DB_NAME=kitrijaya_db
 
 Project ini siap di-deploy ke platform cloud menggunakan Git integration.
 
-### 1. Persiapan Database Production
+### 1. Setup Database dengan TiDB
 
-Gunakan database hosting MySQL seperti:
-- **PlanetScale** (gratis tier tersedia)
-- **Railway** (MySQL support)
-- **Aiven** atau **DigitalOcean Managed Database**
+**TiDB** adalah distributed SQL database yang kompatibel dengan MySQL. Recommended untuk production.
 
-Buat database baru dan catat credentials-nya.
+#### Opsi A: TiDB Cloud (Gratis Tier Tersedia)
+1. Daftar di [TiDB Cloud](https://tidbcloud.com)
+2. Buat cluster baru (pilih region terdekat, contoh: AWS Asia Pacific)
+3. Buat database `kitrijaya_db`
+4. Catat connection details dari dashboard
+
+#### Opsi B: TiDB Self-Hosted (Docker)
+```bash
+# Jalankan TiDB dengan Docker
+docker run -d --name tidb-server \
+  -p 4000:4000 \
+  pingcap/tidb:latest
+
+# Connect ke TiDB
+mysql -h 127.0.0.1 -P 4000 -u root
+```
+
+#### Opsi C: TiDB Operator (Kubernetes)
+Ikuti dokumentasi resmi TiDB untuk deployment di Kubernetes.
 
 ### 2. Setup Environment Variables
 
-Copy `backend/.env.example` ke `backend/.env` dan isi dengan data production:
+Copy `backend/.env.example` ke `backend/.env` dan isi dengan data TiDB:
 
 ```env
 # Server Configuration
 PORT=3000
 NODE_ENV=production
 
-# Database Configuration
-DB_HOST=your-production-db-host
-DB_USER=your-production-db-user
-DB_PASS=your-production-db-password
+# Database Configuration - TiDB Cloud
+DB_HOST=gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+DB_USER=your-tidb-username
+DB_PASS=your-tidb-password
 DB_NAME=kitrijaya_db
-DB_PORT=3306
+DB_PORT=4000
+DB_SSL=true
 
 # JWT Secret (generate random string)
 JWT_SECRET=your-secure-random-jwt-secret-here
@@ -86,6 +102,8 @@ JWT_SECRET=your-secure-random-jwt-secret-here
 GOOGLE_PLACES_API_KEY=your-google-api-key
 GOOGLE_PLACE_ID=your-place-id
 ```
+
+> **Catatan**: Untuk TiDB Cloud, pastikan `DB_SSL=true`. Port default TiDB adalah `4000`.
 
 ### 3. Deploy ke Vercel
 
@@ -120,7 +138,7 @@ kitrijaya/
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Backend**: Node.js, Express.js
-- **Database**: MySQL
+- **Database**: TiDB (MySQL-compatible distributed database)
 - **Authentication**: JWT + bcrypt
 - **File Upload**: Multer
 - **Deployment**: Vercel (recommended)
