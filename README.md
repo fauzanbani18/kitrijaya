@@ -4,7 +4,7 @@ Website landing page profesional untuk toko perlengkapan pramuka **Kitri Jaya**,
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🚀 Cara Menjalankan (Development)
 
 ```bash
 # 1. Masuk ke folder backend & install dependencies (hanya sekali)
@@ -45,8 +45,94 @@ DB_NAME=kitrijaya_db
 | **Admin CMS** | http://localhost:3000/admin |
 
 ### Login Admin
-- **Username:** `admin`
-- **Password:** `admin123`
+- **Username:** `kitrijayaofc`
+- **Password:** `KedaiPramukaKitriJayaPebayuran 181199***`
+
+---
+
+## 🚀 Deployment dengan Git (Production)
+
+Project ini siap di-deploy ke platform cloud menggunakan Git integration.
+
+### 1. Persiapan Database Production
+
+Gunakan database hosting MySQL seperti:
+- **PlanetScale** (gratis tier tersedia)
+- **Railway** (MySQL support)
+- **Aiven** atau **DigitalOcean Managed Database**
+
+Buat database baru dan catat credentials-nya.
+
+### 2. Setup Environment Variables
+
+Copy `backend/.env.example` ke `backend/.env` dan isi dengan data production:
+
+```env
+# Server Configuration
+PORT=3000
+NODE_ENV=production
+
+# Database Configuration
+DB_HOST=your-production-db-host
+DB_USER=your-production-db-user
+DB_PASS=your-production-db-password
+DB_NAME=kitrijaya_db
+DB_PORT=3306
+
+# JWT Secret (generate random string)
+JWT_SECRET=your-secure-random-jwt-secret-here
+
+# Google Places API (opsional)
+GOOGLE_PLACES_API_KEY=your-google-api-key
+GOOGLE_PLACE_ID=your-place-id
+```
+
+### 3. Deploy ke Vercel
+
+1. **Connect Repository**: Hubungkan repository GitHub ke Vercel
+2. **Environment Variables**: Set semua env vars di Vercel dashboard
+3. **Deploy**: Vercel akan otomatis deploy saat ada push ke branch `main`
+
+### 4. Import Database Schema
+
+Setelah deploy, jalankan SQL schema dari `backend/xampp-setup.sql` ke database production Anda.
+
+---
+
+## 📁 Struktur Project
+
+```
+kitrijaya/
+├── frontend/          # Static files (HTML, CSS, JS)
+├── backend/           # Node.js API server
+│   ├── server.js      # Main server file
+│   ├── routes/        # API routes
+│   ├── middleware/    # Auth middleware
+│   ├── config/        # Database config
+│   └── data/          # JSON data files
+├── admin/             # Admin CMS panel
+└── package.json       # Root package.json
+```
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL
+- **Authentication**: JWT + bcrypt
+- **File Upload**: Multer
+- **Deployment**: Vercel (recommended)
+
+---
+
+## 📝 Catatan
+
+- Pastikan repository GitHub Anda **public** agar bisa diakses Vercel
+- Untuk production, gunakan database hosting yang reliable
+- Backup database secara berkala
+- Monitor logs di Vercel dashboard untuk troubleshooting
 
 ---
 
