@@ -1,0 +1,9 @@
+{
+  "name": "kitrijaya",
+  "version": "1.0.0",
+  "description": "Website Landing Page Toko Pramuka Kitri Jaya dengan CMS Admin",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "cd backend && node server.js"
+  }
+}

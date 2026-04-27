@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lagu Pramuka - Kitri Jaya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="section-light">
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar" style="background:var(--bg2);">
+    <div class="container nav-container">
+      <a href="/" class="nav-brand">
+        <img src="/images/logo.png" alt="Kitri Jaya" class="brand-logo" style="width: 42px; height: 42px; object-fit: contain;" />
+        <span class="brand-name">Kitri Jaya</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/">Beranda</a></li>
+        <li><a href="/#products">Produk</a></li>
+        <li><a href="/#articles">Artikel</a></li>
+        <li><a href="/books.html">Buku Saku</a></li>
+        <li><a href="/songs.html" class="active">Lagu</a></li>
+      </ul>
+      <a href="https://wa.me/6281234567890" target="_blank" class="btn btn-primary btn-sm nav-cta" id="whatsapp-btn"><i class="fab fa-whatsapp"></i> Hubungi Kami</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ SONGS ═══ -->
+  <section class="songs section" id="songs" style="min-height: 70vh; padding-top: 150px;">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up">
+        <div class="section-tag"><i class="fas fa-music"></i> Audio</div>
+        <h2 class="section-title">Lagu <span class="gradient-text">Pramuka</span></h2>
+        <p class="section-desc">Dengarkan dan unduh lagu-lagu wajib serta yel-yel penyemangat kegiatan pramuka.</p>
+      </div>
+      <div class="songs-list" id="songs-list" data-aos="fade-up" data-aos-delay="100">
+        <div style="text-align:center"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary)"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="footer-bottom">
+      <p>&copy; <span id="footer-year"></span> Kitri Jaya. Hak Cipta Dilindungi.</p>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

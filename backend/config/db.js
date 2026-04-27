@@ -1,0 +1,204 @@
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASS || '',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
+  ...(process.env.DB_SOCKET_PATH ? { socketPath: process.env.DB_SOCKET_PATH } : {}),
+};
+
+let pool;
+
+async function initDB() {
+  try {
+    const connection = await mysql.createConnection(dbConfig);
+    if (!process.env.DB_NAME) {
+      throw new Error('Variabel DB_NAME tidak ditemukan di .env');
+    }
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``);
+    await connection.end();
+
+    // 2. Buat pool koneksi ke database spesifik
+    pool = mysql.createPool({
+      ...dbConfig,
+      database: process.env.DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    });
+
+    // 3. Buat Tabel Admins
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admins (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL
+      )
+    `);
+
+    // Inisialisasi admin default jika kosong
+    const [admins] = await pool.query('SELECT * FROM admins');
+    if (admins.length === 0) {
+      const hash = bcrypt.hashSync('admin123', 10);
+      await pool.query('INSERT INTO admins (username, password) VALUES (?, ?)', ['admin', hash]);
+    }
+
+    // 4. Buat Tabel Konten Hero
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS hero (
+        id INT PRIMARY KEY DEFAULT 1,
+        title VARCHAR(255),
+        subtitle TEXT,
+        ctaText VARCHAR(255),
+        ctaLink VARCHAR(255),
+        badge VARCHAR(255),
+        image TEXT
+      )
+    `);
+    const [hero] = await pool.query('SELECT * FROM hero');
+    if (hero.length === 0) {
+      await pool.query('INSERT INTO hero (id, title, subtitle, ctaText, ctaLink, badge, image) VALUES (1, "Toko Pramuka Kitri Jaya", "Perlengkapan Pramuka Terlengkap & Berkualitas untuk Semua Tingkatan", "Lihat Produk Kami", "#products", "Terpercaya Sejak 2005", "")');
+    }
+
+    // 5. Buat Tabel Konten About
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS about (
+        id INT PRIMARY KEY DEFAULT 1,
+        title VARCHAR(255),
+        description TEXT,
+        mission TEXT,
+        image TEXT,
+        stats JSON
+      )
+    `);
+    const [about] = await pool.query('SELECT * FROM about');
+    if (about.length === 0) {
+      const defaultStats = JSON.stringify([
+        { label: 'Tahun Berpengalaman', value: '18+' },
+        { label: 'Produk Tersedia', value: '500+' },
+        { label: 'Pelanggan Puas', value: '10K+' },
+        { label: 'Kota Terlayani', value: '50+' }
+      ]);
+      await pool.query('INSERT INTO about (id, title, description, mission, image, stats) VALUES (1, "Tentang Kitri Jaya", "Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 18 tahun.", "Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan perlengkapan terbaik dan terjangkau.", "", ?)', [defaultStats]);
+    }
+
+    // 6. Buat Tabel Kontak
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS contact (
+        id INT PRIMARY KEY DEFAULT 1,
+        address TEXT,
+        phone VARCHAR(100),
+        whatsapp VARCHAR(100),
+        email VARCHAR(100),
+        mapsEmbed TEXT,
+        instagram VARCHAR(255),
+        facebook VARCHAR(255),
+        tiktok VARCHAR(255),
+        openHours VARCHAR(255)
+      )
+    `);
+    const [contact] = await pool.query('SELECT * FROM contact');
+    if (contact.length === 0) {
+      await pool.query(`INSERT INTO contact (id, address, phone, whatsapp, email, mapsEmbed, instagram, facebook, tiktok, openHours) 
+        VALUES (1, 'Jl. Pramuka Raya No. 88, Jakarta Timur, DKI Jakarta 13120', '+62 812-3456-7890', '6281234567890', 'info@kitrijaya.com', 'https://maps.google.com/maps?q=Jakarta&t=&z=13&ie=UTF8&iwloc=&output=embed', 'https://instagram.com/kitrijaya', 'https://facebook.com/kitrijaya', 'https://tiktok.com/@kitrijaya', 'Senin - Sabtu: 08.00 - 17.00 WIB')`);
+    }
+
+    // 7. Buat Tabel Kategori
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL
+      )
+    `);
+
+    // 8. Buat Tabel Produk
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        short_description VARCHAR(255),
+        price INT NOT NULL,
+        category VARCHAR(50),
+        image TEXT,
+        media LONGTEXT,
+        badge VARCHAR(100),
+        featured BOOLEAN DEFAULT false
+      )
+    `);
+    
+    // Tambah kolom produk baru jika belum ada (untuk database yang sudah ada)
+    try {
+      await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description VARCHAR(255)');
+    } catch(e) { /* kolom sudah ada */ }
+    try {
+      await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS media LONGTEXT');
+    } catch(e) { /* kolom sudah ada */ }
+
+    // 9. Buat Tabel Testimoni
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS testimonials (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        role VARCHAR(255),
+        content TEXT NOT NULL,
+        rating INT DEFAULT 5,
+        avatar TEXT,
+        source VARCHAR(50) DEFAULT 'manual'
+      )
+    `);
+
+    // 10. Buat Tabel Artikel
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS articles (
+        id VARCHAR(50) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        excerpt TEXT,
+        content LONGTEXT,
+        image TEXT,
+        views INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    // Tambah kolom views jika belum ada (untuk database yang sudah ada)
+    try {
+      await pool.query('ALTER TABLE articles ADD COLUMN IF NOT EXISTS views INT DEFAULT 0');
+    } catch(e) { /* kolom sudah ada */ }
+
+    // 11. Buat Tabel Buku Saku
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS books (
+        id VARCHAR(50) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        file_url TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 12. Buat Tabel Lagu Pramuka
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS songs (
+        id VARCHAR(50) PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        artist VARCHAR(255),
+        file_url TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('✅ Database MySQL Terhubung & Terinisialisasi');
+  } catch (error) {
+    console.error('❌ Gagal menginisialisasi database MySQL:', error.message);
+    console.log('Pastikan MySQL server sedang berjalan dan konfigurasi di .env benar.');
+  }
+}
+
+module.exports = {
+  getPool: () => pool,
+  initDB
+};

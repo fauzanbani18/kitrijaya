@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kedai Pramuka - Kitri Jaya</title>
+  <meta name="description"
+    content="Kitri Jaya adalah toko perlengkapan pramuka terpercaya dengan koleksi terlengkap. Seragam, tenda, aksesoris, dan peralatan pramuka berkualitas tinggi dengan harga terjangkau." />
+  <meta name="keywords"
+    content="toko pramuka, perlengkapan pramuka, seragam pramuka, tenda pramuka, aksesoris pramuka" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#" class="nav-brand" id="nav-brand-link">
+        <img src="/images/logo.png" alt="Kitri Jaya" class="brand-logo" />
+        <span class="brand-name">Kitri Jaya</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#hero">Beranda</a></li>
+        <li><a href="#about">Tentang Kami</a></li>
+        <li><a href="#products">Produk</a></li>
+        <li><a href="#articles">Artikel</a></li>
+        <!-- <li><a href="/books.html">Buku Saku</a></li> -->
+        <!-- <li><a href="/songs.html">Lagu</a></li> -->
+        <li><a href="#testimonials">Testimoni</a></li>
+        <li><a href="#contact">Kontak</a></li>
+      </ul>
+      <a href="#contact" class="btn btn-primary btn-sm nav-cta">Hubungi Kami</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="container hero-container">
+      <div class="hero-content" data-aos="fade-up">
+        <div class="hero-badge" id="hero-badge">
+          <i class="fas fa-award"></i>
+          <span>Terpercaya Sejak 1996</span>
+        </div>
+        <h1 class="hero-title" id="hero-title">Toko Pramuka <span class="gradient-text">Kitri Jaya</span></h1>
+        <p class="hero-subtitle" id="hero-subtitle">Ingat Pramuka, Ingat Kitri Jaya</p>
+        <div class="hero-actions">
+          <a href="#products" class="btn btn-primary btn-lg" id="hero-cta">
+            <i class="fas fa-shopping-bag"></i>
+            Lihat Produk Kami
+          </a>
+          <a href="#about" class="btn btn-ghost btn-lg">
+            <i class="fas fa-info-circle"></i>
+            Tentang Kami
+          </a>
+        </div>
+        <div class="hero-stats" id="hero-stats">
+          <div class="hero-stat">
+            <span class="stat-value">18+</span>
+            <span class="stat-label">Tahun Pengalaman</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-value">500+</span>
+            <span class="stat-label">Produk Tersedia</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-value">10K+</span>
+            <span class="stat-label">Pelanggan Puas</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual" data-aos="fade-left" data-aos-delay="200">
+        <div class="hero-image-wrap">
+          <div class="hero-image-card" id="hero-image-card">
+            <div class="hero-image-placeholder">
+              <i class="fas fa-campground"></i>
+              <p>Gambar Hero</p>
+              <small>Upload via Admin CMS</small>
+            </div>
+            <img src="" alt="Kitri Jaya" class="hero-img" id="hero-img" style="display:none" />
+          </div>
+          <div class="hero-floating-card card-1">
+            <i class="fas fa-gem"></i>
+            <span>Kualitas Terjaga</span>
+          </div>
+          <div class="hero-floating-card card-2">
+            <i class="fas fa-tags"></i>
+            <span>Harga Terjangkau</span>
+          </div>
+          <div class="hero-floating-card card-3">
+            <i class="fas fa-calendar-check"></i>
+            <span>Sejak 1996</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-mouse">
+        <div class="scroll-wheel"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ABOUT ═══ -->
+  <section class="about section section-light" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-side" data-aos="fade-right">
+          <div class="about-img-wrap">
+            <div class="about-image-placeholder" id="about-img-placeholder">
+              <i class="fas fa-store"></i>
+              <p>Foto Toko</p>
+            </div>
+            <img src="" alt="Toko Kitri Jaya" class="about-img" id="about-img" style="display:none" />
+            <div class="about-experience-badge">
+              <span class="exp-number">18</span>
+              <span class="exp-text">Tahun<br />Pengalaman</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-content-side" data-aos="fade-left">
+          <div class="section-tag">
+            <i class="fas fa-leaf"></i> Tentang Kami
+          </div>
+          <h2 class="section-title" id="about-title">Tentang <span class="gradient-text">Kitri Jaya</span></h2>
+          <p class="about-desc" id="about-description">Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah
+            melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 18 tahun.</p>
+          <p class="about-mission" id="about-mission">Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan
+            perlengkapan terbaik dan terjangkau.</p>
+          <div class="about-stats" id="about-stats">
+            <div class="about-stat-item">
+              <span class="about-stat-value">18+</span>
+              <span class="about-stat-label">Tahun Berpengalaman</span>
+            </div>
+            <div class="about-stat-item">
+              <span class="about-stat-value">500+</span>
+              <span class="about-stat-label">Produk Tersedia</span>
+            </div>
+            <div class="about-stat-item">
+              <span class="about-stat-value">10K+</span>
+              <span class="about-stat-label">Pelanggan Puas</span>
+            </div>
+            <div class="about-stat-item">
+              <span class="about-stat-value">50+</span>
+              <span class="about-stat-label">Kota Terlayani</span>
+            </div>
+          </div>
+          <a href="#contact" class="btn btn-primary">
+            <i class="fas fa-phone"></i> Hubungi Kami
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PRODUCTS ═══ -->
+  <section class="products section section-dark" id="products">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up">
+        <div class="section-tag">
+          <i class="fas fa-box-open"></i> Produk Unggulan
+        </div>
+        <h2 class="section-title">Produk <span class="gradient-text">Terlaris</span></h2>
+        <p class="section-desc">Pilihan terbaik perlengkapan pramuka yang paling diminati pelanggan kami</p>
+      </div>
+      <div class="products-grid" id="products-grid" data-aos="fade-up" data-aos-delay="100">
+        <div class="products-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Memuat produk...</p>
+        </div>
+      </div>
+      <div class="section-cta" data-aos="fade-up">
+        <a href="/products.html" class="btn btn-primary btn-lg btn-rounded">
+          Lihat Semua Produk <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ARTICLES ═══ -->
+  <section class="articles section section-light" id="articles">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up">
+        <div class="section-tag"><i class="fas fa-newspaper"></i> Info & Berita</div>
+        <h2 class="section-title">Artikel <span class="gradient-text">Pramuka</span></h2>
+        <p class="section-desc">Kumpulan berita, tips, dan wawasan seputar kegiatan pramuka terbaru.</p>
+      </div>
+      <div class="articles-grid" id="articles-grid" data-aos="fade-up" data-aos-delay="100">
+        <!-- Dynamically filled -->
+      </div>
+      <div class="section-cta" data-aos="fade-up">
+        <a href="/articles.html" class="btn btn-primary btn-lg btn-rounded">
+          Lihat Semua Artikel <i class="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TESTIMONIALS ═══ -->
+  <section class="testimonials section section-dark" id="testimonials">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up">
+        <div class="section-tag">
+          <i class="fas fa-heart"></i> Testimoni
+        </div>
+        <h2 class="section-title">Kata <span class="gradient-text">Pelanggan Kami</span></h2>
+        <p class="section-desc">Kepuasan pelanggan adalah prioritas utama kami</p>
+      </div>
+      <div class="testimonials-slider-wrap" data-aos="fade-up" data-aos-delay="100">
+        <div class="testimonials-slider" id="testimonials-slider">
+          <!-- Dynamically filled -->
+        </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="prev-btn" aria-label="Previous">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="slider-dots" id="slider-dots"></div>
+          <button class="slider-btn" id="next-btn" aria-label="Next">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONTACT ═══ -->
+  <section class="contact section section-light" id="contact">
+    <div class="container">
+      <div class="section-header" data-aos="fade-up">
+        <div class="section-tag">
+          <i class="fas fa-map-marker-alt"></i> Hubungi Kami
+        </div>
+        <h2 class="section-title">Temukan <span class="gradient-text">Kami</span></h2>
+        <p class="section-desc">Kami siap melayani Anda dengan sepenuh hati</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info" data-aos="fade-right">
+          <div class="contact-cards">
+            <div class="contact-card">
+              <div class="contact-card-icon">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div class="contact-card-content">
+                <h4>Alamat</h4>
+                <p id="contact-address">Jl. Pramuka Raya No. 88, Jakarta Timur</p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div class="contact-card-content">
+                <h4>Telepon</h4>
+                <p><a href="#" id="contact-phone-link">+62 812-3456-7890</a></p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div class="contact-card-content">
+                <h4>Email</h4>
+                <p><a href="#" id="contact-email-link">info@kitrijaya.com</a></p>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="contact-card-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="contact-card-content">
+                <h4>Jam Buka</h4>
+                <p id="contact-hours">Senin - Sabtu: 08.00 - 17.00 WIB</p>
+              </div>
+            </div>
+          </div>
+          <div class="social-links" id="social-links">
+            <a href="#" class="social-btn instagram" id="social-instagram" target="_blank" rel="noopener">
+              <i class="fab fa-instagram"></i> Instagram
+            </a>
+            <a href="#" class="social-btn facebook" id="social-facebook" target="_blank" rel="noopener">
+              <i class="fab fa-facebook"></i> Facebook
+            </a>
+            <a href="#" class="social-btn tiktok" id="social-tiktok" target="_blank" rel="noopener">
+              <i class="fab fa-tiktok"></i> TikTok
+            </a>
+          </div>
+        </div>
+        <div class="contact-map" data-aos="fade-left">
+          <div class="map-wrap">
+            <!-- Google Maps embed gratis - tidak perlu API Key -->
+            <iframe
+              id="map-iframe"
+              src="https://maps.google.com/maps?q=-6.2141675,107.2819183&t=&z=16&ie=UTF8&iwloc=&output=embed"
+              frameborder="0"
+              allowfullscreen
+              loading="lazy"
+              title="Lokasi Kedai Pramuka Kitri Jaya"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+          <a
+            href="https://maps.app.goo.gl/dGgAAFKJevTnxUyQ6"
+            class="map-open-link"
+            target="_blank"
+            rel="noopener">
+            <i class="fas fa-map-marked-alt"></i> Buka di Google Maps
+          </a>
+
+          <a href="#" class="btn btn-whatsapp btn-lg" id="whatsapp-btn" target="_blank" rel="noopener">
+            <i class="fab fa-whatsapp"></i>
+            Chat WhatsApp Sekarang
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="nav-brand">
+            <img src="/images/logo.png" alt="Kitri Jaya" class="brand-logo" />
+            <span class="brand-name">Kitri Jaya</span>
+          </a>
+          <p class="footer-tagline">Perlengkapan Pramuka Terlengkap & Berkualitas. Melayani dengan sepenuh hati sejak
+            2005.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Navigasi</h4>
+          <ul>
+            <li><a href="#hero">Beranda</a></li>
+            <li><a href="#about">Tentang Kami</a></li>
+            <li><a href="#products">Produk</a></li>
+            <li><a href="#testimonials">Testimoni</a></li>
+            <li><a href="#contact">Kontak</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <h4>Kontak Cepat</h4>
+          <p id="footer-address"><i class="fas fa-map-marker-alt"></i> Jl. Pramuka Raya No. 88, Jakarta Timur</p>
+          <p id="footer-phone"><i class="fas fa-phone"></i> +62 812-3456-7890</p>
+          <p id="footer-email"><i class="fas fa-envelope"></i> info@kitrijaya.com</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="footer-year"></span> Kitri Jaya. All rights reserved.</p>
+        <a href="/admin" class="admin-link">Admin Panel</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ FLOATING WHATSAPP ═══ -->
+  <a href="#" class="floating-whatsapp" id="floating-whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <i class="fab fa-whatsapp"></i>
+    <span class="whatsapp-tooltip">Chat Kami!</span>
+  </a>
+
+  <!-- ═══ BACK TO TOP ═══ -->
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script src="/js/main.js"></script>
+</body>
+
+</html>
