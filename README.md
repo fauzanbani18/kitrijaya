@@ -112,3 +112,4 @@ Authorization: Bearer <token>
 Body: { "newPassword": "passwordbaru" }
 ```
 # kitrijaya
+# kitrijaya
