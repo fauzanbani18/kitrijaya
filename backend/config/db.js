@@ -20,17 +20,16 @@ const poolConfig = {
   ssl: {
     rejectUnauthorized: true,
   },
-  // Pool-specific options
+  waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  acquireTimeout: 60000,
-  timeout: 60000,
+  connectTimeout: 10000,
 };
 
 let pool;
 
 async function getPool() {
-  if (!pool) {
+  if (!pool || typeof pool.query !== 'function') {
     try {
       console.log('🔄 Creating database connection pool...');
       console.log('DB_HOST:', process.env.DB_HOST);
@@ -55,23 +54,10 @@ async function getPool() {
 
 async function initDB() {
   try {
-    const connection = await mysql.createConnection(dbConfig);
-    if (!process.env.DB_NAME) {
-      throw new Error('Variabel DB_NAME tidak ditemukan di .env');
-    }
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``);
-    await connection.end();
+    // Gunakan getPool() agar tidak ada race condition dengan pool yang sama
+    const pool = await getPool();
 
-    // 2. Buat pool koneksi ke database spesifik
-    pool = mysql.createPool({
-      ...dbConfig,
-      database: process.env.DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0
-    });
-
-    // 3. Buat Tabel Admins
+    // Buat Tabel Admins
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admins (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -87,7 +73,7 @@ async function initDB() {
       await pool.query('INSERT INTO admins (username, password) VALUES (?, ?)', ['admin', hash]);
     }
 
-    // 4. Buat Tabel Konten Hero
+    // Buat Tabel Konten Hero
     await pool.query(`
       CREATE TABLE IF NOT EXISTS hero (
         id INT PRIMARY KEY DEFAULT 1,
@@ -101,10 +87,13 @@ async function initDB() {
     `);
     const [hero] = await pool.query('SELECT * FROM hero');
     if (hero.length === 0) {
-      await pool.query('INSERT INTO hero (id, title, subtitle, ctaText, ctaLink, badge, image) VALUES (1, "Toko Pramuka Kitri Jaya", "Perlengkapan Pramuka Terlengkap & Berkualitas untuk Semua Tingkatan", "Lihat Produk Kami", "#products", "Terpercaya Sejak 2005", "")');
+      await pool.query(
+        'INSERT INTO hero (id, title, subtitle, ctaText, ctaLink, badge, image) VALUES (1, ?, ?, ?, ?, ?, ?)',
+        ['Toko Pramuka Kitri Jaya', 'Perlengkapan Pramuka Terlengkap & Berkualitas untuk Semua Tingkatan', 'Lihat Produk Kami', '#products', 'Terpercaya Sejak 2005', '']
+      );
     }
 
-    // 5. Buat Tabel Konten About
+    // Buat Tabel Konten About
     await pool.query(`
       CREATE TABLE IF NOT EXISTS about (
         id INT PRIMARY KEY DEFAULT 1,
@@ -123,10 +112,13 @@ async function initDB() {
         { label: 'Pelanggan Puas', value: '10K+' },
         { label: 'Kota Terlayani', value: '50+' }
       ]);
-      await pool.query('INSERT INTO about (id, title, description, mission, image, stats) VALUES (1, "Tentang Kitri Jaya", "Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 18 tahun.", "Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan perlengkapan terbaik dan terjangkau.", "", ?)', [defaultStats]);
+      await pool.query(
+        'INSERT INTO about (id, title, description, mission, image, stats) VALUES (1, ?, ?, ?, ?, ?)',
+        ['Tentang Kitri Jaya', 'Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 18 tahun.', 'Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan perlengkapan terbaik dan terjangkau.', '', defaultStats]
+      );
     }
 
-    // 6. Buat Tabel Kontak
+    // Buat Tabel Kontak
     await pool.query(`
       CREATE TABLE IF NOT EXISTS contact (
         id INT PRIMARY KEY DEFAULT 1,
@@ -143,11 +135,14 @@ async function initDB() {
     `);
     const [contact] = await pool.query('SELECT * FROM contact');
     if (contact.length === 0) {
-      await pool.query(`INSERT INTO contact (id, address, phone, whatsapp, email, mapsEmbed, instagram, facebook, tiktok, openHours) 
-        VALUES (1, 'Jl. Pramuka Raya No. 88, Jakarta Timur, DKI Jakarta 13120', '+62 812-3456-7890', '6281234567890', 'info@kitrijaya.com', 'https://maps.google.com/maps?q=Jakarta&t=&z=13&ie=UTF8&iwloc=&output=embed', 'https://instagram.com/kitrijaya', 'https://facebook.com/kitrijaya', 'https://tiktok.com/@kitrijaya', 'Senin - Sabtu: 08.00 - 17.00 WIB')`);
+      await pool.query(
+        `INSERT INTO contact (id, address, phone, whatsapp, email, mapsEmbed, instagram, facebook, tiktok, openHours)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ['Jl. Pramuka Raya No. 88, Jakarta Timur, DKI Jakarta 13120', '+62 812-3456-7890', '6281234567890', 'info@kitrijaya.com', 'https://maps.google.com/maps?q=Jakarta&t=&z=13&ie=UTF8&iwloc=&output=embed', 'https://instagram.com/kitrijaya', 'https://facebook.com/kitrijaya', 'https://tiktok.com/@kitrijaya', 'Senin - Sabtu: 08.00 - 17.00 WIB']
+      );
     }
 
-    // 7. Buat Tabel Kategori
+    // Buat Tabel Kategori
     await pool.query(`
       CREATE TABLE IF NOT EXISTS categories (
         id VARCHAR(50) PRIMARY KEY,
@@ -155,7 +150,7 @@ async function initDB() {
       )
     `);
 
-    // 8. Buat Tabel Produk
+    // Buat Tabel Produk
     await pool.query(`
       CREATE TABLE IF NOT EXISTS products (
         id VARCHAR(50) PRIMARY KEY,
@@ -170,16 +165,10 @@ async function initDB() {
         featured BOOLEAN DEFAULT false
       )
     `);
-    
-    // Tambah kolom produk baru jika belum ada (untuk database yang sudah ada)
-    try {
-      await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description VARCHAR(255)');
-    } catch(e) { /* kolom sudah ada */ }
-    try {
-      await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS media LONGTEXT');
-    } catch(e) { /* kolom sudah ada */ }
+    try { await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS short_description VARCHAR(255)'); } catch(e) {}
+    try { await pool.query('ALTER TABLE products ADD COLUMN IF NOT EXISTS media LONGTEXT'); } catch(e) {}
 
-    // 9. Buat Tabel Testimoni
+    // Buat Tabel Testimoni
     await pool.query(`
       CREATE TABLE IF NOT EXISTS testimonials (
         id VARCHAR(50) PRIMARY KEY,
@@ -192,7 +181,7 @@ async function initDB() {
       )
     `);
 
-    // 10. Buat Tabel Artikel
+    // Buat Tabel Artikel
     await pool.query(`
       CREATE TABLE IF NOT EXISTS articles (
         id VARCHAR(50) PRIMARY KEY,
@@ -204,12 +193,9 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    // Tambah kolom views jika belum ada (untuk database yang sudah ada)
-    try {
-      await pool.query('ALTER TABLE articles ADD COLUMN IF NOT EXISTS views INT DEFAULT 0');
-    } catch(e) { /* kolom sudah ada */ }
+    try { await pool.query('ALTER TABLE articles ADD COLUMN IF NOT EXISTS views INT DEFAULT 0'); } catch(e) {}
 
-    // 11. Buat Tabel Buku Saku
+    // Buat Tabel Buku Saku
     await pool.query(`
       CREATE TABLE IF NOT EXISTS books (
         id VARCHAR(50) PRIMARY KEY,
@@ -220,7 +206,7 @@ async function initDB() {
       )
     `);
 
-    // 12. Buat Tabel Lagu Pramuka
+    // Buat Tabel Lagu Pramuka
     await pool.query(`
       CREATE TABLE IF NOT EXISTS songs (
         id VARCHAR(50) PRIMARY KEY,

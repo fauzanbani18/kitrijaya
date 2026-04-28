@@ -40,7 +40,7 @@ router.post('/change-password', require('../middleware/auth'), async (req, res) 
       return res.status(400).json({ success: false, message: 'Password minimal 6 karakter' });
     }
     
-    const pool = getPool();
+    const pool = await getPool();
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     // Asumsi kita mengubah password untuk admin pertama atau admin yang login (menggunakan username dari token)
     await pool.query('UPDATE admins SET password = ? WHERE username = ?', [hashedPassword, req.user.username]);

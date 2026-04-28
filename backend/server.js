@@ -12,8 +12,15 @@ if (fs.existsSync(envPath)) {
 
 const { initDB } = require('./config/db');
 
+function getUploadsDir() {
+  if (process.env.UPLOAD_DIR) return process.env.UPLOAD_DIR;
+  if (process.env.VERCEL || process.env.LAMBDA_TASK_ROOT) return '/tmp/kitrijaya-uploads';
+  return path.join(__dirname, 'uploads');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const uploadsDir = getUploadsDir();
 
 // Middleware
 app.use(cors());
@@ -21,14 +28,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
 app.use('/admin', express.static(path.join(__dirname, '../admin')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Ensure uploads directory exists
-if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
-  fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
-}
+fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Inisialisasi MySQL DB
 initDB();

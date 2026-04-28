@@ -84,7 +84,7 @@ router.get('/content', async (req, res) => {
 // GET /api/articles/:id — Public route to read a single article
 router.get('/articles/:id', async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const [[article]] = await pool.query('SELECT * FROM articles WHERE id = ?', [req.params.id]);
     if (!article) return res.status(404).json({ success: false, message: 'Artikel tidak ditemukan' });
     res.json({ success: true, data: article });
@@ -151,7 +151,7 @@ router.get('/products/:id', async (req, res) => {
 // --- HERO ---
 router.put('/hero', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { title, subtitle, ctaText, ctaLink, badge, image } = req.body;
     await pool.query(
       'UPDATE hero SET title=?, subtitle=?, ctaText=?, ctaLink=?, badge=?, image=? WHERE id=1',
@@ -167,7 +167,7 @@ router.put('/hero', auth, async (req, res) => {
 // --- ABOUT ---
 router.put('/about', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { title, description, mission, image, stats } = req.body;
     const statsStr = Array.isArray(stats) ? JSON.stringify(stats) : stats;
     await pool.query(
@@ -184,7 +184,7 @@ router.put('/about', auth, async (req, res) => {
 // --- CONTACT ---
 router.put('/contact', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { address, phone, whatsapp, email, mapsEmbed, instagram, facebook, tiktok, openHours } = req.body;
     await pool.query(
       'UPDATE contact SET address=?, phone=?, whatsapp=?, email=?, mapsEmbed=?, instagram=?, facebook=?, tiktok=?, openHours=? WHERE id=1',
@@ -264,7 +264,7 @@ router.post('/products', auth, async (req, res) => {
 
 router.put('/products/:id', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { name, short_description, description, price, category, image, badge, featured, media } = req.body;
     const isFeatured = featured === true || featured === 'true';
     const mediaItems = sanitizeProductMedia(media);
@@ -285,7 +285,8 @@ router.put('/products/:id', auth, async (req, res) => {
 
 router.delete('/products/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM products WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM products WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Produk berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal hapus produk' });
@@ -294,7 +295,8 @@ router.delete('/products/:id', auth, async (req, res) => {
 
 // --- TESTIMONIALS ---
 router.get('/testimonials', auth, async (req, res) => {
-  const [data] = await getPool().query('SELECT * FROM testimonials ORDER BY id DESC');
+  const pool = await getPool();
+  const [data] = await pool.query('SELECT * FROM testimonials ORDER BY id DESC');
   res.json({ success: true, data });
 });
 
@@ -376,7 +378,8 @@ router.put('/articles/:id', auth, async (req, res) => {
 
 router.delete('/articles/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM articles WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM articles WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Artikel berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal hapus artikel' });
