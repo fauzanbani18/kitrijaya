@@ -43,7 +43,7 @@ router.post('/sync-reviews', auth, async (req, res) => {
       return res.json({ success: true, message: 'Tidak ada ulasan baru ditemukan di Google Maps.' });
     }
 
-    const pool = getPool();
+    const pool = await getPool();
     let syncedCount = 0;
 
     for (const review of reviews) {

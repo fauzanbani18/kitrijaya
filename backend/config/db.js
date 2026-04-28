@@ -14,6 +14,7 @@ const dbConfig = {
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASS || '',
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
+  database: process.env.DB_NAME || 'kitrijaya',
   ...(process.env.DB_SOCKET_PATH ? { socketPath: process.env.DB_SOCKET_PATH } : {}),
   // TiDB SSL configuration
   ...(process.env.DB_SSL === 'true' ? {
@@ -25,9 +26,32 @@ const dbConfig = {
       // key: fs.readFileSync(path.join(__dirname, '../certs/client-key.pem')),
     }
   } : {}),
+  connectionLimit: 10,
+  queueLimit: 0,
+  acquireTimeout: 60000,
+  timeout: 60000,
 };
 
 let pool;
+
+async function getPool() {
+  if (!pool) {
+    try {
+      console.log('🔄 Creating database connection pool...');
+      pool = mysql.createPool(dbConfig);
+
+      // Test the connection
+      const connection = await pool.getConnection();
+      await connection.ping();
+      connection.release();
+      console.log('✅ Database connection pool created successfully');
+    } catch (error) {
+      console.error('❌ Failed to create database connection pool:', error.message);
+      throw error;
+    }
+  }
+  return pool;
+}
 
 async function initDB() {
   try {
@@ -215,6 +239,6 @@ async function initDB() {
 }
 
 module.exports = {
-  getPool: () => pool,
+  getPool,
   initDB
 };

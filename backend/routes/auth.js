@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'kitrijaya-secret-key-2024';
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const pool = getPool();
+    const pool = await getPool();
     const [rows] = await pool.query('SELECT * FROM admins WHERE username = ?', [username]);
     
     if (rows.length === 0) {

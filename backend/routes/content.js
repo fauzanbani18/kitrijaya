@@ -45,7 +45,7 @@ function normalizeProduct(product) {
 // GET /api/content — All landing page content
 router.get('/content', async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const [[hero]] = await pool.query('SELECT * FROM hero WHERE id = 1');
     const [[about]] = await pool.query('SELECT * FROM about WHERE id = 1');
     const [[contact]] = await pool.query('SELECT * FROM contact WHERE id = 1');
@@ -97,7 +97,7 @@ router.get('/articles/:id', async (req, res) => {
 // POST /api/articles/:id/view — Increment view count
 router.post('/articles/:id/view', async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     await pool.query('UPDATE articles SET views = COALESCE(views, 0) + 1 WHERE id = ?', [req.params.id]);
     const [[article]] = await pool.query('SELECT views FROM articles WHERE id = ?', [req.params.id]);
     res.json({ success: true, views: article?.views || 0 });
@@ -110,7 +110,7 @@ router.post('/articles/:id/view', async (req, res) => {
 // GET /api/products
 router.get('/products', async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { category, featured } = req.query;
     
     let query = 'SELECT * FROM products WHERE 1=1';
@@ -136,7 +136,7 @@ router.get('/products', async (req, res) => {
 // GET /api/products/:id — Detail produk
 router.get('/products/:id', async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const [[product]] = await pool.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
     if (!product) return res.status(404).json({ success: false, message: 'Produk tidak ditemukan' });
     res.json({ success: true, data: normalizeProduct(product) });
@@ -199,13 +199,14 @@ router.put('/contact', auth, async (req, res) => {
 
 // --- CATEGORIES ---
 router.get('/categories', auth, async (req, res) => {
-  const [data] = await getPool().query('SELECT * FROM categories');
+  const pool = await getPool();
+  const [data] = await pool.query('SELECT * FROM categories');
   res.json({ success: true, data });
 });
 
 router.post('/categories', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const id = `cat-${uuidv4().slice(0,8)}`;
     const { name } = req.body;
     await pool.query('INSERT INTO categories (id, name) VALUES (?, ?)', [id, name]);
@@ -218,7 +219,7 @@ router.post('/categories', auth, async (req, res) => {
 
 router.put('/categories/:id', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { name } = req.body;
     await pool.query('UPDATE categories SET name = ? WHERE id = ?', [name, req.params.id]);
     res.json({ success: true, message: 'Kategori berhasil diperbarui' });
@@ -230,7 +231,8 @@ router.put('/categories/:id', auth, async (req, res) => {
 
 router.delete('/categories/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM categories WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM categories WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Kategori berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal menghapus kategori' });
@@ -240,7 +242,7 @@ router.delete('/categories/:id', auth, async (req, res) => {
 // --- PRODUCTS ---
 router.post('/products', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const id = `prod-${uuidv4().slice(0,8)}`;
     const { name, short_description, description, price, category, image, badge, featured, media } = req.body;
     const isFeatured = featured === true || featured === 'true';
@@ -298,7 +300,7 @@ router.get('/testimonials', auth, async (req, res) => {
 
 router.post('/testimonials', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const id = `test-${uuidv4().slice(0,8)}`;
     const { name, role, content, rating, avatar } = req.body;
     await pool.query(
@@ -314,7 +316,7 @@ router.post('/testimonials', auth, async (req, res) => {
 
 router.put('/testimonials/:id', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const { name, role, content, rating, avatar } = req.body;
     await pool.query(
       'UPDATE testimonials SET name=?, role=?, content=?, rating=?, avatar=? WHERE id=?',
@@ -328,7 +330,8 @@ router.put('/testimonials/:id', auth, async (req, res) => {
 
 router.delete('/testimonials/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM testimonials WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM testimonials WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Testimoni berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal hapus testimoni' });
@@ -337,15 +340,17 @@ router.delete('/testimonials/:id', auth, async (req, res) => {
 
 // --- ARTICLES ---
 router.get('/articles', auth, async (req, res) => {
-  const [data] = await getPool().query('SELECT * FROM articles ORDER BY created_at DESC');
+  const pool = await getPool();
+  const [data] = await pool.query('SELECT * FROM articles ORDER BY created_at DESC');
   res.json({ success: true, data });
 });
 
 router.post('/articles', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const id = `art-${uuidv4().slice(0,8)}`;
     const { title, excerpt, content, image } = req.body;
-    await getPool().query(
+    await pool.query(
       'INSERT INTO articles (id, title, excerpt, content, image) VALUES (?, ?, ?, ?, ?)',
       [id, title, excerpt, content, image]
     );
@@ -357,8 +362,9 @@ router.post('/articles', auth, async (req, res) => {
 
 router.put('/articles/:id', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const { title, excerpt, content, image } = req.body;
-    await getPool().query(
+    await pool.query(
       'UPDATE articles SET title=?, excerpt=?, content=?, image=? WHERE id=?',
       [title, excerpt, content, image, req.params.id]
     );
@@ -379,15 +385,17 @@ router.delete('/articles/:id', auth, async (req, res) => {
 
 // --- BOOKS ---
 router.get('/books', auth, async (req, res) => {
-  const [data] = await getPool().query('SELECT * FROM books ORDER BY created_at DESC');
+  const pool = await getPool();
+  const [data] = await pool.query('SELECT * FROM books ORDER BY created_at DESC');
   res.json({ success: true, data });
 });
 
 router.post('/books', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const id = `book-${uuidv4().slice(0,8)}`;
     const { title, description, file_url } = req.body;
-    await getPool().query(
+    await pool.query(
       'INSERT INTO books (id, title, description, file_url) VALUES (?, ?, ?, ?)',
       [id, title, description, file_url]
     );
@@ -399,8 +407,9 @@ router.post('/books', auth, async (req, res) => {
 
 router.put('/books/:id', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const { title, description, file_url } = req.body;
-    await getPool().query(
+    await pool.query(
       'UPDATE books SET title=?, description=?, file_url=? WHERE id=?',
       [title, description, file_url, req.params.id]
     );
@@ -412,7 +421,8 @@ router.put('/books/:id', auth, async (req, res) => {
 
 router.delete('/books/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM books WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM books WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Buku Saku berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal hapus buku saku' });
@@ -421,15 +431,17 @@ router.delete('/books/:id', auth, async (req, res) => {
 
 // --- SONGS ---
 router.get('/songs', auth, async (req, res) => {
-  const [data] = await getPool().query('SELECT * FROM songs ORDER BY created_at DESC');
+  const pool = await getPool();
+  const [data] = await pool.query('SELECT * FROM songs ORDER BY created_at DESC');
   res.json({ success: true, data });
 });
 
 router.post('/songs', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const id = `song-${uuidv4().slice(0,8)}`;
     const { title, artist, file_url } = req.body;
-    await getPool().query(
+    await pool.query(
       'INSERT INTO songs (id, title, artist, file_url) VALUES (?, ?, ?, ?)',
       [id, title, artist, file_url]
     );
@@ -441,8 +453,9 @@ router.post('/songs', auth, async (req, res) => {
 
 router.put('/songs/:id', auth, async (req, res) => {
   try {
+    const pool = await getPool();
     const { title, artist, file_url } = req.body;
-    await getPool().query(
+    await pool.query(
       'UPDATE songs SET title=?, artist=?, file_url=? WHERE id=?',
       [title, artist, file_url, req.params.id]
     );
@@ -454,7 +467,8 @@ router.put('/songs/:id', auth, async (req, res) => {
 
 router.delete('/songs/:id', auth, async (req, res) => {
   try {
-    await getPool().query('DELETE FROM songs WHERE id = ?', [req.params.id]);
+    const pool = await getPool();
+    await pool.query('DELETE FROM songs WHERE id = ?', [req.params.id]);
     res.json({ success: true, message: 'Lagu Pramuka berhasil dihapus' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Gagal hapus lagu pramuka' });
@@ -464,7 +478,7 @@ router.delete('/songs/:id', auth, async (req, res) => {
 // --- STATS (for admin dashboard) ---
 router.get('/stats', auth, async (req, res) => {
   try {
-    const pool = getPool();
+    const pool = await getPool();
     const [[{ totalProducts }]] = await pool.query('SELECT COUNT(*) as totalProducts FROM products');
     const [[{ totalCategories }]] = await pool.query('SELECT COUNT(*) as totalCategories FROM categories');
     const [[{ totalTestimonials }]] = await pool.query('SELECT COUNT(*) as totalTestimonials FROM testimonials');

@@ -10,7 +10,7 @@ if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
 
-const { initDB, getPool } = require('../backend/config/db');
+const { getPool } = require('../backend/config/db');
 
 const app = express();
 
@@ -35,21 +35,12 @@ let dbInitialized = false;
 const initializeDatabase = async () => {
   if (!dbInitialized) {
     try {
-      console.log('🔄 Initializing database...');
-      console.log('DB_HOST:', process.env.DB_HOST ? 'SET' : 'NOT SET');
-      console.log('DB_USER:', process.env.DB_USER ? 'SET' : 'NOT SET');
-      console.log('DB_PASS:', process.env.DB_PASS ? 'SET' : 'NOT SET');
-      console.log('DB_NAME:', process.env.DB_NAME ? 'SET' : 'NOT SET');
-      console.log('DB_PORT:', process.env.DB_PORT ? 'SET' : 'NOT SET');
-      console.log('DB_SSL:', process.env.DB_SSL ? 'SET' : 'NOT SET');
-      console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
-
-      await initDB();
+      console.log('🔄 Testing database connection...');
+      const pool = await getPool();
       dbInitialized = true;
-      console.log('✅ Database initialized successfully');
+      console.log('✅ Database connection test successful');
     } catch (error) {
-      console.error('❌ Database initialization failed:', error.message);
-      console.error('Stack:', error.stack);
+      console.error('❌ Database connection test failed:', error.message);
     }
   }
 };
