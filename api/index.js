@@ -10,7 +10,7 @@ if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
 
-const { initDB } = require('../backend/config/db');
+const { initDB, getPool } = require('../backend/config/db');
 
 const app = express();
 
@@ -30,8 +30,29 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Inisialisasi MySQL DB
-initDB();
+// Initialize DB on startup
+let dbInitialized = false;
+const initializeDatabase = async () => {
+  if (!dbInitialized) {
+    try {
+      console.log('🔄 Initializing database...');
+      console.log('DB_HOST:', process.env.DB_HOST ? 'SET' : 'NOT SET');
+      console.log('DB_USER:', process.env.DB_USER ? 'SET' : 'NOT SET');
+      console.log('DB_PASS:', process.env.DB_PASS ? 'SET' : 'NOT SET');
+      console.log('DB_NAME:', process.env.DB_NAME ? 'SET' : 'NOT SET');
+      console.log('DB_PORT:', process.env.DB_PORT ? 'SET' : 'NOT SET');
+      console.log('DB_SSL:', process.env.DB_SSL ? 'SET' : 'NOT SET');
+      console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
+
+      await initDB();
+      dbInitialized = true;
+      console.log('✅ Database initialized successfully');
+    } catch (error) {
+      console.error('❌ Database initialization failed:', error.message);
+      console.error('Stack:', error.stack);
+    }
+  }
+};
 
 // Routes
 const authRoutes = require('../backend/routes/auth');
@@ -58,5 +79,8 @@ app.get('/admin/dashboard', (req, res) => {
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
+
+// Initialize database before handling requests
+initializeDatabase();
 
 module.exports = app;
