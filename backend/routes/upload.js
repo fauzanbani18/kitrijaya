@@ -6,6 +6,22 @@ const auth = require('../middleware/auth');
 const { getPool } = require('../config/db');
 const router = express.Router();
 
+// Pastikan tabel ada sebelum dipakai (self-healing untuk cold-start Vercel)
+async function ensureMediaTable() {
+  const pool = await getPool();
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS media_files (
+      id VARCHAR(50) PRIMARY KEY,
+      filename VARCHAR(255) NOT NULL,
+      mimetype VARCHAR(100) NOT NULL,
+      data LONGBLOB NOT NULL,
+      size INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  return pool;
+}
+
 // Pakai memoryStorage — file disimpan ke TiDB, bukan filesystem
 const storage = multer.memoryStorage();
 
@@ -61,7 +77,7 @@ router.post('/upload', auth, (req, res) => {
     if (!req.file) return res.status(400).json({ success: false, message: 'Tidak ada file yang diupload' });
 
     try {
-      const pool = await getPool();
+      const pool = await ensureMediaTable();
       const id = `file-${uuidv4().slice(0, 12)}`;
       await pool.query(
         'INSERT INTO media_files (id, filename, mimetype, data, size) VALUES (?, ?, ?, ?, ?)',
@@ -92,7 +108,7 @@ router.post('/upload-multiple', auth, (req, res) => {
     }
 
     try {
-      const pool = await getPool();
+      const pool = await ensureMediaTable();
       const results = [];
 
       for (const file of req.files) {
