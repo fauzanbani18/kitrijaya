@@ -113,7 +113,18 @@ GOOGLE_PLACE_ID=your-place-id
 
 ### 4. Import Database Schema
 
-Setelah deploy, jalankan SQL schema dari `backend/xampp-setup.sql` ke database production Anda.
+Setelah database TiDB siap, jalankan SQL schema dari `backend/tidb-setup.sql` ke database Anda.
+
+**Untuk TiDB Cloud:**
+- Buka TiDB Cloud dashboard
+- Pilih cluster → SQL Editor
+- Copy-paste isi `backend/tidb-setup.sql`
+- Execute
+
+**Untuk TiDB Self-Hosted:**
+```bash
+mysql -h 127.0.0.1 -P 4000 -u root < backend/tidb-setup.sql
+```
 
 ---
 
