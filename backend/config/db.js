@@ -16,16 +16,10 @@ const dbConfig = {
   port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
   database: process.env.DB_NAME || 'kitrijaya',
   ...(process.env.DB_SOCKET_PATH ? { socketPath: process.env.DB_SOCKET_PATH } : {}),
-  // TiDB SSL configuration
-  ...(process.env.DB_SSL === 'true' ? {
-    ssl: {
-      rejectUnauthorized: true,
-      // Jika menggunakan TiDB Cloud, uncomment baris berikut:
-      // ca: fs.readFileSync(path.join(__dirname, '../certs/ca.pem')),
-      // cert: fs.readFileSync(path.join(__dirname, '../certs/client-cert.pem')),
-      // key: fs.readFileSync(path.join(__dirname, '../certs/client-key.pem')),
-    }
-  } : {}),
+  // TiDB Cloud serverless tier requires SSL connections
+  ssl: {
+    rejectUnauthorized: true,
+  },
   connectionLimit: 10,
   queueLimit: 0,
   acquireTimeout: 60000,
