@@ -3,7 +3,13 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+// Load .env only if it exists (local development)
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
+
 const { initDB } = require('./config/db');
 
 const app = express();

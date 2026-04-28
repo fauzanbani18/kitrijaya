@@ -2,7 +2,12 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// Load .env only if it exists (local development)
+const envPath = path.join(__dirname, '..', '.env');
+if (fs.existsSync(envPath)) {
+  require('dotenv').config({ path: envPath });
+}
 
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
