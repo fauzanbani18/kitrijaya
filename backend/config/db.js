@@ -107,14 +107,14 @@ async function initDB() {
     const [about] = await pool.query('SELECT * FROM about');
     if (about.length === 0) {
       const defaultStats = JSON.stringify([
-        { label: 'Tahun Berpengalaman', value: '18+' },
+        { label: 'Tahun Berpengalaman', value: '30+' },
         { label: 'Produk Tersedia', value: '500+' },
         { label: 'Pelanggan Puas', value: '10K+' },
         { label: 'Kota Terlayani', value: '50+' }
       ]);
       await pool.query(
         'INSERT INTO about (id, title, description, mission, image, stats) VALUES (1, ?, ?, ?, ?, ?)',
-        ['Tentang Kitri Jaya', 'Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 18 tahun.', 'Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan perlengkapan terbaik dan terjangkau.', '', defaultStats]
+        ['Tentang Kitri Jaya', 'Kitri Jaya adalah toko perlengkapan pramuka terpercaya yang telah melayani kebutuhan anggota pramuka di seluruh Indonesia selama lebih dari 30 tahun.', 'Misi kami adalah mendukung kegiatan kepramukaan dengan menyediakan perlengkapan terbaik dan terjangkau.', '', defaultStats]
       );
     }
 
