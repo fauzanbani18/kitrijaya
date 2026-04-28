@@ -217,6 +217,18 @@ async function initDB() {
       )
     `);
 
+    // Buat Tabel File Upload (simpan binary di TiDB agar permanen di Vercel)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_files (
+        id VARCHAR(50) PRIMARY KEY,
+        filename VARCHAR(255) NOT NULL,
+        mimetype VARCHAR(100) NOT NULL,
+        data LONGBLOB NOT NULL,
+        size INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     console.log('✅ Database MySQL Terhubung & Terinisialisasi');
   } catch (error) {
     console.error('❌ Gagal menginisialisasi database MySQL:', error.message);

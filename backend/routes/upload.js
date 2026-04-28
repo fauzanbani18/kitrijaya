@@ -1,20 +1,12 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
+const { getPool } = require('../config/db');
 const router = express.Router();
 
-function getUploadsDir() {
-  if (process.env.UPLOAD_DIR) return process.env.UPLOAD_DIR;
-  if (process.env.VERCEL || process.env.LAMBDA_TASK_ROOT) return '/tmp/kitrijaya-uploads';
-  return path.join(__dirname, '../uploads');
-}
-
-const uploadsDir = getUploadsDir();
-fs.mkdirSync(uploadsDir, { recursive: true });
-
-// Pakai memoryStorage agar tidak ada EROFS di Vercel — file ditulis manual
+// Pakai memoryStorage — file disimpan ke TiDB, bukan filesystem
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -40,89 +32,133 @@ function sendUploadError(res, error) {
       return res.status(400).json({ success: false, message: 'Jumlah file melebihi batas yang diizinkan.' });
     }
   }
-
   return res.status(400).json({ success: false, message: error.message || 'Gagal upload file' });
 }
 
-// POST /api/upload
+// GET /api/files/:id — Serve file dari TiDB (permanen, tidak bergantung filesystem)
+router.get('/files/:id', async (req, res) => {
+  try {
+    const pool = await getPool();
+    const [[file]] = await pool.query(
+      'SELECT filename, mimetype, data FROM media_files WHERE id = ?',
+      [req.params.id]
+    );
+    if (!file) return res.status(404).json({ success: false, message: 'File tidak ditemukan' });
+
+    res.setHeader('Content-Type', file.mimetype);
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // cache 1 tahun
+    res.send(file.data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Gagal mengambil file' });
+  }
+});
+
+// POST /api/upload — Simpan ke TiDB
 router.post('/upload', auth, (req, res) => {
-  upload.single('file')(req, res, error => {
+  upload.single('file')(req, res, async error => {
     if (error) return sendUploadError(res, error);
     if (!req.file) return res.status(400).json({ success: false, message: 'Tidak ada file yang diupload' });
 
-    const dir = getUploadsDir();
-    fs.mkdirSync(dir, { recursive: true });
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const filename = uniqueSuffix + path.extname(req.file.originalname);
-    const filePath = path.join(dir, filename);
-
     try {
-      fs.writeFileSync(filePath, req.file.buffer);
-    } catch (writeErr) {
-      console.error('Upload write error:', writeErr.message);
-      return res.status(500).json({ success: false, message: 'Gagal menyimpan file: ' + writeErr.message });
-    }
+      const pool = await getPool();
+      const id = `file-${uuidv4().slice(0, 12)}`;
+      await pool.query(
+        'INSERT INTO media_files (id, filename, mimetype, data, size) VALUES (?, ?, ?, ?, ?)',
+        [id, req.file.originalname, req.file.mimetype, req.file.buffer, req.file.size]
+      );
 
-    res.json({
-      success: true,
-      url: `/uploads/${filename}`,
-      message: 'File berhasil diupload',
-      filename,
-      mimetype: req.file.mimetype
-    });
+      const fileUrl = `/api/files/${id}`;
+      res.json({
+        success: true,
+        url: fileUrl,
+        message: 'File berhasil diupload',
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype
+      });
+    } catch (err) {
+      console.error('Upload DB error:', err);
+      res.status(500).json({ success: false, message: 'Gagal menyimpan file ke database' });
+    }
   });
 });
 
-// POST /api/upload-multiple
+// POST /api/upload-multiple — Simpan banyak file ke TiDB
 router.post('/upload-multiple', auth, (req, res) => {
-  upload.array('files', 6)(req, res, error => {
+  upload.array('files', 6)(req, res, async error => {
     if (error) return sendUploadError(res, error);
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'Tidak ada file yang diupload' });
     }
 
-    const dir = getUploadsDir();
-    fs.mkdirSync(dir, { recursive: true });
-    const results = [];
+    try {
+      const pool = await getPool();
+      const results = [];
 
-    for (const file of req.files) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const filename = uniqueSuffix + path.extname(file.originalname);
-      try {
-        fs.writeFileSync(path.join(dir, filename), file.buffer);
-        results.push({ url: `/uploads/${filename}`, filename, mimetype: file.mimetype });
-      } catch (writeErr) {
-        console.error('Upload write error:', writeErr.message);
-        return res.status(500).json({ success: false, message: 'Gagal menyimpan file: ' + writeErr.message });
+      for (const file of req.files) {
+        const id = `file-${uuidv4().slice(0, 12)}`;
+        await pool.query(
+          'INSERT INTO media_files (id, filename, mimetype, data, size) VALUES (?, ?, ?, ?, ?)',
+          [id, file.originalname, file.mimetype, file.buffer, file.size]
+        );
+        results.push({
+          url: `/api/files/${id}`,
+          filename: file.originalname,
+          mimetype: file.mimetype
+        });
       }
-    }
 
-    res.json({
-      success: true,
-      files: results,
-      message: `${results.length} file berhasil diupload`
-    });
+      res.json({
+        success: true,
+        files: results,
+        message: `${results.length} file berhasil diupload`
+      });
+    } catch (err) {
+      console.error('Upload DB error:', err);
+      res.status(500).json({ success: false, message: 'Gagal menyimpan file ke database' });
+    }
   });
 });
 
-// DELETE /api/upload
-router.delete('/upload', auth, (req, res) => {
+// DELETE /api/upload — Hapus file dari TiDB
+router.delete('/upload', auth, async (req, res) => {
   const { filename } = req.body;
-  if (!filename) return res.status(400).json({ success: false, message: 'Nama file diperlukan' });
-  const filePath = path.join(uploadsDir, filename);
-  if (fs.existsSync(filePath)) {
-    fs.unlinkSync(filePath);
+  if (!filename) return res.status(400).json({ success: false, message: 'ID file diperlukan' });
+
+  try {
+    const pool = await getPool();
+    // Support both old-style filename and new-style file ID
+    const id = filename.startsWith('file-') ? filename : filename.replace('/api/files/', '');
+    const [result] = await pool.query('DELETE FROM media_files WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'File tidak ditemukan' });
+    }
     res.json({ success: true, message: 'File berhasil dihapus' });
-  } else {
-    res.status(404).json({ success: false, message: 'File tidak ditemukan' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Gagal menghapus file' });
   }
 });
 
-// GET /api/uploads-list
-router.get('/uploads-list', auth, (req, res) => {
-  const files = fs.readdirSync(uploadsDir)
-    .map(f => ({ filename: f, url: `/uploads/${f}` }));
-  res.json({ success: true, data: files });
+// GET /api/uploads-list — Daftar file yang tersimpan di TiDB
+router.get('/uploads-list', auth, async (req, res) => {
+  try {
+    const pool = await getPool();
+    const [files] = await pool.query(
+      'SELECT id, filename, mimetype, size, created_at FROM media_files ORDER BY created_at DESC'
+    );
+    const data = files.map(f => ({
+      filename: f.id,
+      url: `/api/files/${f.id}`,
+      originalName: f.filename,
+      mimetype: f.mimetype,
+      size: f.size
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Gagal mengambil daftar file' });
+  }
 });
 
 module.exports = router;
