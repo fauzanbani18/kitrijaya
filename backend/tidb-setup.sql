@@ -2,8 +2,8 @@
 -- Compatible with TiDB Cloud and Self-Hosted TiDB
 -- Run this in TiDB SQL client or import via TiDB Cloud dashboard
 
--- Create database (skip if using TiDB Cloud dashboard)
--- CREATE DATABASE IF NOT EXISTS `kitrijaya_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Create database
+CREATE DATABASE IF NOT EXISTS `kitrijaya_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Use the database
 USE `kitrijaya_db`;
