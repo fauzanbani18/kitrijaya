@@ -9,7 +9,7 @@ if (fs.existsSync(envPath)) {
   require('dotenv').config({ path: envPath });
 }
 
-const dbConfig = {
+const connectionConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASS || '',
@@ -20,6 +20,10 @@ const dbConfig = {
   ssl: {
     rejectUnauthorized: true,
   },
+};
+
+const poolConfig = {
+  ...connectionConfig,
   connectionLimit: 10,
   queueLimit: 0,
   acquireTimeout: 60000,
@@ -32,7 +36,11 @@ async function getPool() {
   if (!pool) {
     try {
       console.log('🔄 Creating database connection pool...');
-      pool = mysql.createPool(dbConfig);
+      console.log('DB_HOST:', process.env.DB_HOST);
+      console.log('DB_USER:', process.env.DB_USER);
+      console.log('DB_NAME:', process.env.DB_NAME);
+      console.log('DB_PORT:', process.env.DB_PORT);
+      pool = mysql.createPool(poolConfig);
 
       // Test the connection
       const connection = await pool.getConnection();
